@@ -1,6 +1,7 @@
 package com.sharemyday
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.sharemyday.Users.nullable
@@ -23,6 +24,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.security.SecureRandom
 import java.time.Duration
 
+private val CORS_ORIGIN_FOR_DEBUG = System.getenv("CORS_ORIGIN_FOR_DEBUG")
+
 const val REDDIT_CLIENT_ID = "-xHId8au1RQpKyqWsKs-wQ"
 private val REDDIT_CLIENT_SECRET = System.getenv("REDDIT_CLIENT_SECRET")
 const val REDDIT_REDIRECT_URL = "http://localhost:8000/auth/reddit/redirect"
@@ -31,8 +34,7 @@ const val REDDIT_SCOPE = "identity"
 private val SESSION_ID_VALID_CHARS = ((48..57) + (65..90) + (97..122)).map { it.toChar() }
 
 private val httpClient = OkHttpClient()
-private val jsonMapper = jacksonObjectMapper().findAndRegisterModules()
-    .setPropertyNamingStrategy(PropertyNamingStrategies.SnakeCaseStrategy())
+private val jsonMapper = jacksonObjectMapper().findAndRegisterModules();
 private val base64Encoder = Base64.getUrlEncoder()
 private val db = Database.connect(
     "jdbc:postgresql://localhost:5433/sharemyday",
@@ -46,7 +48,10 @@ fun main() {
         SchemaUtils.create(Sessions, Users);
     }
 
-    val app = Javalin.create().start(8000)
+    val app = Javalin.create { config ->
+        config.enableCorsForOrigin(CORS_ORIGIN_FOR_DEBUG)
+    }.start(8000)
+
     app.get("/") { ctx ->
         val sessionId = ctx.cookie("sessionId");
         if (sessionId == null) {
@@ -67,6 +72,35 @@ fun main() {
     }
 
     app.routes {
+        path("api") {
+            get("me") { ctx ->
+                val sessionId = ctx.cookie("sessionId");
+                if (sessionId == null) {
+                    ctx.status(401).result("Please login")
+                    return@get
+                }
+                val user = transaction {
+                    return@transaction Session.findById(sessionId)?.load(Session::user)?.user
+                }
+                if (user == null) {
+                    ctx.status(401)
+                        .cookie("sessionId", "", 0)
+                        .result("Please login")
+                    return@get
+                }
+                ctx.result(
+                    jsonMapper.writeValueAsString(
+                        MeResponse(
+                            id = user.id.toString(),
+                            name = user.name,
+                            occupation = user.occupation,
+                            location = user.location,
+                            redditUsername = user.redditUsername,
+                        )
+                    )
+                )
+            }
+        }
         path("auth/reddit") {
             get("start") { ctx ->
                 val randomString = "nicestate"
@@ -195,6 +229,11 @@ class User(id: EntityID<UUID>) : UUIDEntity(id) {
     var redditTokenExpiresAt by Users.redditTokenExpiresAt
 }
 
+data class MeResponse(
+    val id: String,
+    val name: String?, val occupation: String?, val location: String?, val redditUsername: String?)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RedditAuthTokenResponse(
     val accessToken: String, val tokenType: String, val expiresIn: Int,
     val scope: String, val refreshToken: String)
