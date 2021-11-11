@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Upload from './Upload.svelte';
     import {User, user} from './store/user';
 
     fetch('http://localhost:8000/api/me', {credentials: 'include'})
@@ -13,6 +14,8 @@
         Login via Reddit
     </a>
 {/if}
+
+<Upload />
 
 <style>
 </style>
