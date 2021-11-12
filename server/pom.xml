@@ -90,6 +90,16 @@
             <artifactId>postgresql</artifactId>
             <version>42.2.24</version>
         </dependency>
+        <dependency>
+            <groupId>io.insert-koin</groupId>
+            <artifactId>koin-core</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.insert-koin</groupId>
+            <artifactId>koin-logger-slf4j</artifactId>
+            <version>3.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -120,5 +130,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

@@ -2,7 +2,7 @@
     import Upload from './Upload.svelte';
     import {User, user} from './store/user';
 
-    fetch('http://localhost:8000/api/me', {credentials: 'include'})
+    fetch('http://localhost:8000/api/user/me', {credentials: 'include'})
         .then(response => response.json())
         .then(userJson => user.setUser(userJson));
 </script>
