@@ -5,7 +5,7 @@
     interface Image {
         id: number,
         imageBase64: string,
-        when: string,
+        describedTime: string,
         description: string,
     }
     let _counter = 0;
@@ -25,7 +25,7 @@
                 images = [...images, {
                     imageBase64: reader.result as string,
                     id: _counter++,
-                    when: "",
+                    describedTime: "",
                     description: "",
                 }]
             });
@@ -34,7 +34,24 @@
     }
 
     function submit() {
-        console.log("I just submitted", images);
+        fetch('http://localhost:8000/api/days/new', {
+            credentials: 'include',
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                occupation: "",
+                occasion: "",
+                longitude: 0,
+                latitude: 0,
+                photos: images.map(image => ({
+                    imageBase64: image.imageBase64,
+                    description: image.description,
+                    describedTime: image.describedTime,
+                })),
+            }),
+        });
     } 
 </script>
 
@@ -42,7 +59,7 @@
 
 {#each images as image, i (image.id)}
     <img src={images[i].imageBase64} alt="This is a cool thing.">
-    <input type="text" on:change|stopPropagation={(e) => image.when = e.currentTarget.value}>
+    <input type="text" on:change|stopPropagation={(e) => image.describedTime = e.currentTarget.value}>
     <textarea on:change|stopPropagation={(e) => image.description = e.currentTarget.value}></textarea>
 {/each}
 

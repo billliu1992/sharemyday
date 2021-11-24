@@ -12,21 +12,8 @@ class UserEndpoints : EndpointGroup, KoinComponent {
     private val jsonMapper: ObjectMapper by inject()
 
     override fun addEndpoints() {
-        get("me") { ctx ->
-            val sessionId = ctx.cookie("sessionId");
-            if (sessionId == null) {
-                ctx.status(401).result("Please login")
-                return@get
-            }
-            val user = transaction {
-                return@transaction Session.findById(sessionId)?.load(Session::user)?.user
-            }
-            if (user == null) {
-                ctx.status(401)
-                    .cookie("sessionId", "", 0)
-                    .result("Please login")
-                return@get
-            }
+        get("me", { ctx ->
+            val user = ctx.attribute<User>("user")!!
             ctx.json(
                 jsonMapper.writeValueAsString(
                     MeResponse(
@@ -38,7 +25,7 @@ class UserEndpoints : EndpointGroup, KoinComponent {
                     )
                 )
             )
-        }
+        }, RouteRoles.AUTHENTICATED)
     }
 }
 
