@@ -17,5 +17,30 @@
 
 <Upload />
 
-<style>
+<style global lang=less>
+    @import "common";
+
+    body {
+        font-family: system-ui;
+    }
+
+    h1, h2, h3 {
+        margin: 0;
+    }
+
+    textarea,
+    input[type="text"] {
+        background-color: unset;
+        border: 0;
+        border-bottom: 1px solid @medium-green;
+        color: @medium-green;
+        outline: 0;
+    }
+
+    .btn {
+        background-color: @light-green;
+        border: 1px solid @medium-green;
+        border-radius: 5px;
+        color: @dark-green;
+    }
 </style>
