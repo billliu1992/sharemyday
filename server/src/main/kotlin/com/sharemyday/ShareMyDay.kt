@@ -2,6 +2,7 @@ package com.sharemyday
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.maps.GeoApiContext
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.path
 import io.javalin.core.security.RouteRole
@@ -14,6 +15,7 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
 private val CORS_ORIGIN_FOR_DEBUG = System.getenv("CORS_ORIGIN_FOR_DEBUG")
+private val GOOGLE_API_KEY = System.getenv("GOOGLE_API_KEY")
 
 fun main() {
     Database.connect(
@@ -29,6 +31,11 @@ fun main() {
         modules(
             module {
                 single { OkHttpClient() }
+                single {
+                    GeoApiContext.Builder()
+                        .apiKey(GOOGLE_API_KEY)
+                        .build();
+                }
                 single<ObjectMapper> { jacksonObjectMapper().findAndRegisterModules() }
                 single<PhotoService> { LocalPhotoService("/home/bill/tmp") }
             })
@@ -81,6 +88,7 @@ fun main() {
         path("api") {
             path("user", UserEndpoints())
             path("days", DaysEndpoints())
+            path("map", MapEndpoints())
         }
         path("auth", AuthEndpoints())
     }
