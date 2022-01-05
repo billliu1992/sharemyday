@@ -2,6 +2,8 @@
 <svelte:options immutable />
 
 <script lang=ts>
+    import LocationAutocomplete from './LocationAutocomplete.svelte';
+
     interface Image {
         id: number,
         imageBase64: string,
@@ -62,7 +64,7 @@
         <div class="title-inputs">
             <span class="input-preamble">A day in the life of</span>
             <span class="input-row">a <input type="text"></span>
-            <span class="input-row">in <input type="text"></span>
+            <span class="input-row">in <LocationAutocomplete class="location-input" /></span>
         </div>
 
         <div class="image-inputs">
@@ -160,10 +162,19 @@
                 font-size: 24px;
                 margin-bottom: 16px;
 
-                input {
-                    font-size: 24px;
+                input,
+                :global(.location-input) {
                     outline: 0;
-                    width: 9em;
+
+                    @media @not-phone {
+                        width: 9em;
+                        font-size: 24px;
+                    }
+
+                    @media @phone {
+                        width: 8em;
+                        font-size: 14px;
+                    }
                 }
 
                 @media @phone {
@@ -176,10 +187,6 @@
 
                     .input-row {
                         display: inline-block;
-
-                        input {
-                            width: 5em;
-                        }
                     } 
                 }
             }
