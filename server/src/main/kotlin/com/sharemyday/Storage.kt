@@ -23,7 +23,7 @@ class Session(id: EntityID<String>) : Entity<String>(id) {
 }
 
 object Users: UUIDTable() {
-    val name = text("name").nullable()
+    val name = text("name")
     val occupation = text("occupation").nullable()
     val location = text("location").nullable()
 
@@ -70,6 +70,7 @@ class Day(id: EntityID<UUID>) : UUIDEntity(id) {
     var latitude  by Days.latitude
     var occupation by Days.occupation
     var occasion by Days.occasion
+    val photos by DayPhoto referrersOn DayPhotos.day
 }
 
 object DayPhotos: UUIDTable() {
